@@ -39,12 +39,17 @@ def add_member(name, phone, addr, div):
 # 2. 회원 목록 보기
 def list_members():
     if not MEMBERS_BUFFER:
-        print("\n[안내] 등록된 회원 데이터가 없습니다.")
+        print("\n 등록된 회원 데이터가 없습니다.")
         return
 
     print(f"\n총 {len(MEMBERS_BUFFER)}명의 회원이 저장되어 있습니다.") 
-    for i, m in enumerate(MEMBERS_BUFFER, 1):
-        print(f"회원정보 : 이름: {m['name']} , 전화번호: {m['phone']} , 주소: {m['addr']} , 구분: {m['div']}")   
+    
+    # 0부터 (전체 회원 수 - 1)까지 숫자로 반복
+    for i in range(len(MEMBERS_BUFFER)):
+        m = MEMBERS_BUFFER[i] # 인덱스로 회원 정보 꺼내기
+        
+        # 화면에는 i + 1을 해서 1번부터 출력
+        print(f"{i + 1}. 회원정보 : 이름: {m['name']} , 전화번호: {m['phone']} , 주소: {m['addr']} , 구분: {m['div']}")
 
 # 이름검색
 def find_by_name(action_name):
@@ -56,7 +61,12 @@ def find_by_name(action_name):
         print("이름을 입력해야 합니다. 메뉴로 돌아갑니다.")
         return -1
 
-    search_results = [(idx, m) for idx, m in enumerate(MEMBERS_BUFFER) if m['name'] == search_name]
+    search_results = []
+    for idx in range(len(MEMBERS_BUFFER)):
+        m = MEMBERS_BUFFER[idx]
+        if m['name'] == search_name:
+            search_results.append((idx, m)) # (원본인덱스, 회원정보) 튜플 추가
+
     search_count = len(search_results)
 
     if search_count == 0:
@@ -69,8 +79,13 @@ def find_by_name(action_name):
     # 동명이인 처리
     print(f"\n총 {search_count}개의 목록이 검색되었습니다.")
     print(f"아래 목록 중 {action_name}할 회원의 번호를 입력하세요.")
-    for i, (idx, m) in enumerate(search_results, 1):
-        print(f"{i}. 이름: {m['name']} | 전화번호: {m['phone']} | 주소: {m['addr']} | 구분: {m['div']}")
+    
+    for i in range(search_count):
+        idx = search_results[i][0]  # 원본 버퍼의 인덱스
+        m = search_results[i][1]    # 회원 정보 딕셔너리
+        
+        # 화면에는 i + 1을 해서 1번부터 보이게 합니다.
+        print(f"{i + 1}. 이름: {m['name']} | 전화번호: {m['phone']} | 주소: {m['addr']} | 구분: {m['div']}")
     
     while True:
         try:
@@ -133,7 +148,7 @@ def update_member():
 # 4. 회원 삭제 (메모리에서 1건만 즉시 꺼내어 삭제)
 def delete_member():
     if not MEMBERS_BUFFER:
-        print("\n[안내] 등록된 회원 데이터 파일이 없습니다.")
+        print("\n등록된 회원 데이터 파일이 없습니다.")
         return
 
     target_idx = find_by_name("삭제")
@@ -213,4 +228,7 @@ def main():
             print("\n잘못된 메뉴입니다. 다시 선택하세요.")
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n\n프로그램을 종료합니다.")
