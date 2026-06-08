@@ -4,19 +4,16 @@ import re
 
 FILE_PATH = './members.dat'
 
-# 헬퍼 함수: 파일에서 회원 데이터 로드 (ast.literal_eval 대신 json.loads 사용)
 def load_members():
     if not os.path.exists(FILE_PATH):
         return []
     try:
         with open(FILE_PATH, 'r', encoding="utf-8") as f:
-            # json.loads()를 통해 문자열을 안전하게 딕셔너리로 변환합니다.
             return [json.loads(line.strip()) for line in f if line.strip()]
     except Exception as e:
         print(f"\n파일을 읽는 중 오류가 발생했습니다: {e}")
         return []
 
-# 헬퍼 함수: 회원 데이터를 파일에 덮어쓰기 저장 (json.dumps 사용)
 def save_members(members):
     try:
         with open(FILE_PATH, 'w', encoding="utf-8") as f:
@@ -51,7 +48,7 @@ def list_members():
     for i, m in enumerate(members, 1):
         print(f"회원정보 : 이름: {m['name']} , 전화번호: {m['phone']} , 주소: {m['addr']} , 구분: {m['div']}")   
 
-# 검색 및 대상 인덱스 반환 공통 로직
+# 이름검색
 def find_by_name(members, action_name):
     print(f"\n----------------------------")
     print(f" {action_name}할 회원의 이름을 입력하세요.")
@@ -141,9 +138,6 @@ def validate_name(name: str) -> bool:
 def validate_phone(phone: str) -> bool:
     return re.fullmatch(r"010\d{8}", phone) is not None
 
-# def validate_name(name: str) -> bool:
-#     return 1 <= len(name) <= 5 # 이름 1~5자  
-
 def validate_type(t: str) -> bool:
     return t in ("가족", "친구", "기타") # 셋 중 하나만  
 
@@ -160,6 +154,7 @@ def main():
         print("5. 종료")
         menu = input("메뉴를 선택하세요: ")
         
+        #1. 회원 추가
         if menu == '1':
             print("\n----------------------------")
             print(" 등록할 회원의 정보를 입력하세요.")
@@ -185,19 +180,20 @@ def main():
                 if(validate_type(div) == False):
                     print("\n종류는 가족/친구/기타 중 하나여야 합니다.")                    
                     continue
-                break              
-
-
-
+                break
 
             add_member(name, phone, addr, div)
 
+        #2. 회원 목록 보기
         elif menu == '2':
             list_members()
+        #3. 회원 정보 수정하기    
         elif menu == '3':
             update_member()
+        #4. 회원 삭제    
         elif menu == '4':
             delete_member()            
+        #5. 종료    
         elif menu == '5':
             print("\n👋 프로그램을 종료합니다.")
             break
