@@ -1,24 +1,29 @@
+
 import pickle
 import re
 
 FILE_PATH = './members.dat'
 
-# 파일에서 전체 회원 리스트 로드
-def load_members():
+# 💡 전역 변수로 메모리에 회원 리스트를 상주시켜 매번 파일을 읽는 비효율을 제거합니다.
+MEMBERS_BUFFER = []
+
+# 프로그램 시작 시 딱 한 번만 파일 전체를 로드하는 함수
+def load_data():
+    global MEMBERS_BUFFER
     try:
         with open(FILE_PATH, 'rb') as f:
-            return pickle.load(f)
+            MEMBERS_BUFFER = pickle.load(f)
     except Exception as e:
-        print(f"\n파일을 읽는 중 오류가 발생했습니다: {e}")
-        return []
+        print(f"\n파일을 로드하는 중 오류가 발생했습니다: {e}")
+        MEMBERS_BUFFER = []
 
-# 전체 회원 리스트를 파일에 통째로 저장
-def save_data(members):
+# 메모리의 변경 사항을 파일에 동기화
+def save_data():
     try:
         with open(FILE_PATH, 'wb') as f:
-            pickle.dump(members, f)
+            pickle.dump(MEMBERS_BUFFER, f)
     except Exception as e:
-        print(f"\n파일을 저장하는 중 오류가 발생했습니다: {e}")
+        print(f"\n파일 동기화 중 오류가 발생했습니다: {e}")
 
 # 1. 회원 추가
 def add_member(name, phone, addr, div):
@@ -27,25 +32,22 @@ def add_member(name, phone, addr, div):
         "phone": phone,
         "addr": addr,
         "div": div
-    }
-    
-    members = load_members()
-    members.append(new_member)
-    save_data(members)  
+    }   
+    MEMBERS_BUFFER.append(new_member)
+    save_data()
 
 # 2. 회원 목록 보기
 def list_members():
-    members = load_members()
-    if not members:
+    if not MEMBERS_BUFFER:
         print("\n[안내] 등록된 회원 데이터가 없습니다.")
         return
 
-    print(f"\n총 {len(members)}명의 회원이 저장되어 있습니다.") 
-    for i, m in enumerate(members, 1):
+    print(f"\n총 {len(MEMBERS_BUFFER)}명의 회원이 저장되어 있습니다.") 
+    for i, m in enumerate(MEMBERS_BUFFER, 1):
         print(f"회원정보 : 이름: {m['name']} , 전화번호: {m['phone']} , 주소: {m['addr']} , 구분: {m['div']}")   
 
 # 이름검색
-def find_by_name(members, action_name):
+def find_by_name(action_name):
     print(f"\n----------------------------")
     print(f" {action_name}할 회원의 이름을 입력하세요.")
     print(f"----------------------------")
@@ -54,7 +56,7 @@ def find_by_name(members, action_name):
         print("이름을 입력해야 합니다. 메뉴로 돌아갑니다.")
         return -1
 
-    search_results = [(idx, m) for idx, m in enumerate(members) if m['name'] == search_name]
+    search_results = [(idx, m) for idx, m in enumerate(MEMBERS_BUFFER) if m['name'] == search_name]
     search_count = len(search_results)
 
     if search_count == 0:
@@ -80,14 +82,13 @@ def find_by_name(members, action_name):
         except ValueError:
             print("올바른 숫자를 입력해 주세요.")
 
-# 3. 회원 정보 수정하기
+# 3. 회원 정보 수정하기 (메모리의 특정 인덱스 1건만 즉시 수정)
 def update_member():
-    members = load_members()
-    if not members:
-        print("\n[안내] 등록된 회원 데이터 파일이 없습니다.")
+    if not MEMBERS_BUFFER:
+        print("\n등록된 회원 데이터 파일이 없습니다.")
         return
 
-    target_idx = find_by_name(members, "수정")
+    target_idx = find_by_name("수정")
     if target_idx == -1:
         return
 
@@ -95,7 +96,6 @@ def update_member():
     print(" 수정할 정보를 입력하세요.")
     print("----------------------------")
     
-    # 💡 유효성 검증 루프 적용
     while True:
         new_name = input("이름: ").strip()                
         if not validate_name(new_name):
@@ -119,29 +119,30 @@ def update_member():
             continue
         break
 
-    members[target_idx] = {
+    # 메모리 상의 target_idx 위치 데이터 1건만 수정합니다.
+    MEMBERS_BUFFER[target_idx] = {
         "name": new_name,
         "phone": new_phone,
         "addr": new_addr,  
         "div": new_div
     }
 
-    save_data(members)
+    save_data()
     print("\n 수정이 완료되었습니다.")
 
-# 4. 회원 삭제
+# 4. 회원 삭제 (메모리에서 1건만 즉시 꺼내어 삭제)
 def delete_member():
-    members = load_members()
-    if not members:
+    if not MEMBERS_BUFFER:
         print("\n[안내] 등록된 회원 데이터 파일이 없습니다.")
         return
 
-    target_idx = find_by_name(members, "삭제")
+    target_idx = find_by_name("삭제")
     if target_idx == -1:
         return
 
-    members.pop(target_idx)
-    save_data(members)
+    # 메모리에서 1건만 제거(pop)합니다.
+    MEMBERS_BUFFER.pop(target_idx)
+    save_data()
     print("\n 삭제가 완료되었습니다.")
 
 def validate_name(name: str) -> bool:
@@ -155,6 +156,9 @@ def validate_type(t: str) -> bool:
 
 # 화면 메뉴 로딩
 def main():
+    # 💡 프로그램이 실행될 때 최초 1회만 파일에서 데이터를 긁어와 메모리에 올립니다.
+    load_data()
+
     while True:
         print("\n============================")
         print("다음 메뉴 중 하나를 선택하세요.")
@@ -196,16 +200,12 @@ def main():
 
             add_member(name, phone, addr, div)
 
-        #2. 회원 목록 보기
         elif menu == '2':
             list_members()
-        #3. 회원 정보 수정하기    
         elif menu == '3':
             update_member()
-        #4. 회원 삭제    
         elif menu == '4':
             delete_member()            
-        #5. 종료    
         elif menu == '5':
             print("\n👋 프로그램을 종료합니다.")
             break
