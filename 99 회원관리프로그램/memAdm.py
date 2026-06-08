@@ -222,6 +222,7 @@ def main():
         elif menu == '4':
             delete_member()            
         elif menu == '5':
+            save_data()            
             print("\n👋 프로그램을 종료합니다.")
             break
         else:
