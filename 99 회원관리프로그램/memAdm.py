@@ -1,24 +1,22 @@
-import json
-import os
+import pickle
 import re
 
 FILE_PATH = './members.dat'
 
+# 파일에서 전체 회원 리스트 로드
 def load_members():
-    if not os.path.exists(FILE_PATH):
-        return []
     try:
-        with open(FILE_PATH, 'r', encoding="utf-8") as f:
-            return [json.loads(line.strip()) for line in f if line.strip()]
+        with open(FILE_PATH, 'rb') as f:
+            return pickle.load(f)
     except Exception as e:
         print(f"\n파일을 읽는 중 오류가 발생했습니다: {e}")
         return []
 
-def save_members(members):
+# 전체 회원 리스트를 파일에 통째로 저장
+def save_data(members):
     try:
-        with open(FILE_PATH, 'w', encoding="utf-8") as f:
-            for m in members:
-                f.write(json.dumps(m, ensure_ascii=False) + "\n")
+        with open(FILE_PATH, 'wb') as f:
+            pickle.dump(members, f)
     except Exception as e:
         print(f"\n파일을 저장하는 중 오류가 발생했습니다: {e}")
 
@@ -33,9 +31,7 @@ def add_member(name, phone, addr, div):
     
     members = load_members()
     members.append(new_member)
-    save_members(members)
-    
-    print(f"\n [완료] {name} 회원의 정보가 성공적으로 추가되었습니다!")
+    save_data(members)  
 
 # 2. 회원 목록 보기
 def list_members():
@@ -98,23 +94,39 @@ def update_member():
     print("\n----------------------------")
     print(" 수정할 정보를 입력하세요.")
     print("----------------------------")
-    new_name = input("이름: ").strip()
-    new_phone = input("전화번호(ex: 01012345678): ").strip()
-    new_addr = input("주소: ").strip()
-    new_div = input("종류(ex. 가족, 친구, 기타): ").strip()
+    
+    # 💡 유효성 검증 루프 적용
+    while True:
+        new_name = input("이름: ").strip()                
+        if not validate_name(new_name):
+            print("\n이름은 5자 이내로 입력하세요.")                    
+            continue
+        break
 
-    if not new_name or not new_phone:
-        print("\n에러: 이름과 전화번호는 필수 입력 항목입니다. 수정이 취소되었습니다.")
-        return
+    while True:
+        new_phone = input("전화번호(ex: 01012345678): ").strip()
+        if not validate_phone(new_phone):
+            print("\n전화번호 형식이 올바르지 않습니다. (예: 01012345678)")                    
+            continue
+        break   
+        
+    new_addr = input("주소: ").strip()
+
+    while True:
+        new_div = input("종류(ex. 가족, 친구, 기타): ").strip()
+        if not validate_type(new_div):
+            print("\n종류는 가족/친구/기타 중 하나여야 합니다.")                    
+            continue
+        break
 
     members[target_idx] = {
         "name": new_name,
         "phone": new_phone,
-        "addr": new_div,  # 기존 코드의 오타(new_div가 들어간 부분) 유지 혹은 수정 가능
+        "addr": new_addr,  
         "div": new_div
     }
 
-    save_members(members)
+    save_data(members)
     print("\n 수정이 완료되었습니다.")
 
 # 4. 회원 삭제
@@ -129,17 +141,17 @@ def delete_member():
         return
 
     members.pop(target_idx)
-    save_members(members)
+    save_data(members)
     print("\n 삭제가 완료되었습니다.")
 
 def validate_name(name: str) -> bool:
-    return 1 <= len(name) <= 5 # 이름 1~5자 
+    return 1 <= len(name) <= 5 
 
 def validate_phone(phone: str) -> bool:
     return re.fullmatch(r"010\d{8}", phone) is not None
 
 def validate_type(t: str) -> bool:
-    return t in ("가족", "친구", "기타") # 셋 중 하나만  
+    return t in ("가족", "친구", "기타")
 
 # 화면 메뉴 로딩
 def main():
@@ -162,14 +174,14 @@ def main():
 
             while True:
                 name = input("이름: ").strip()                
-                if(validate_name(name) == False):
+                if not validate_name(name):
                     print("\n이름은 5자 이내로 입력하세요.")                    
                     continue
                 break
 
             while True:
                 phone = input("전화번호(ex: 01012345678): ").strip()
-                if(validate_phone(phone) == False):
+                if not validate_phone(phone):
                     print("\n전화번호 형식이 올바르지 않습니다. (예: 01012345678)")                    
                     continue
                 break   
@@ -177,7 +189,7 @@ def main():
 
             while True:
                 div = input("종류(ex. 가족, 친구, 기타): ").strip()
-                if(validate_type(div) == False):
+                if not validate_type(div):
                     print("\n종류는 가족/친구/기타 중 하나여야 합니다.")                    
                     continue
                 break
@@ -200,6 +212,5 @@ def main():
         else:
             print("\n잘못된 메뉴입니다. 다시 선택하세요.")
 
-# 화면 메뉴 로딩 실행
 if __name__ == "__main__":
     main()
