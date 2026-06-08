@@ -1,67 +1,5 @@
 import ast
 
-def memDelete():
-    # 전체 회원 데이터를 불러옵니다.
-    try:
-        with open('./members.dat', 'r', encoding="utf-8") as f:
-            members = [ast.literal_eval(line.strip()) for line in f if line.strip()]
-    except FileNotFoundError:
-        print("\n[안내] 등록된 회원 데이터 파일이 없습니다.")
-        return
-
-    # 흐름 1. 삭제할 회원의 이름을 입력받는다.
-    print("\n----------------------------")
-    print(" 삭제할 회원의 이름을 입력하세요.")
-    print("----------------------------")
-    search_name = input("이름 : ").strip()
-    if not search_name:
-        print("❌ 이름을 입력해야 합니다. 메뉴로 돌아갑니다.")
-        return
-
-    # 흐름 2. 해당 이름의 회원을 검색한다. (원본 인덱스와 함께 데이터 매칭)
-    search_results = [(idx, m) for idx, m in enumerate(members) if m['name'] == search_name]
-    search_count = len(search_results)
-
-    target_idx = -1  # 삭제 대상이 될 원본 리스트의 인덱스 번호
-
-    # 🛑 예외 처리 0명: 해당하는 회원 정보가 없습니다.
-    if search_count == 0:
-        print("\n❌ 해당하는 회원 정보가 없습니다.")
-        return
-
-    # 🟢 1명일 때 즉시 삭제 대상 선정
-    elif search_count == 1:
-        target_idx = search_results[0][0]
-
-    # 🟡 2명 이상(동명이인)일 때 번호 선택 화면 출력
-    else:
-        print(f"\n총 {search_count}개의 목록이 검색되었습니다.")
-        print("아래 목록 중 삭제할 회원의 번호를 입력하세요.")
-        for i, (idx, m) in enumerate(search_results, 1):
-            print(f"{i}. 이름 = {m['name']}, 전화번호 : {m['phone']}, 주소 : {m['addr']}, 종류 : {m['div']}")
-        
-        while True:
-            try:
-                choice = int(input("번호 입력: "))
-                if 1 <= choice <= search_count:
-                    target_idx = search_results[choice - 1][0]
-                    break
-                else:
-                    print(f"❌ 1번부터 {search_count}번 사이의 숫자를 입력해 주세요.")
-            except ValueError:
-                print("❌ 올바른 숫자를 입력해 주세요.")
-
-    # 흐름 3. 메모리 데이터에서 삭제 후 파일에 최종 덮어쓰기('w')
-    # pop(인덱스)을 사용하여 타겟 회원 정보를 리스트에서 완전히 제거합니다.
-    members.pop(target_idx)
-
-    with open('./members.dat', 'w', encoding="utf-8") as f:
-        for m in members:
-            f.write(f"{m}\n")
-            
-    # 흐름 4. 완료 출력
-    print("\n✨ 삭제가 완료되었습니다.")
-
 def memUpdate():
     # 먼저 전체 회원 데이터를 불러옵니다.
     try:
@@ -205,7 +143,8 @@ def init():
         elif menu == '3':
             memUpdate()
         elif menu == '4':
-            memDelete()            
+            print("\n[4. 회원 삭제] 기능을 실행합니다.")
+            # delete_member()
         elif menu == '5':
             print("\n👋 프로그램을 종료합니다.")
             break  # 5번을 눌렀을 때만 안전하게 종료되도록 탈출구 일원화!
@@ -214,5 +153,7 @@ def init():
 
 # 화면 메뉴 로딩 실행
 init()
+
+
 
 
