@@ -1,5 +1,6 @@
 import ast
 
+
 def memUpdate():
     # 먼저 전체 회원 데이터를 불러옵니다.
     try:
