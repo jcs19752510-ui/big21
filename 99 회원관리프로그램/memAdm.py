@@ -209,7 +209,7 @@ def main():
                 print("\n잘못된 입력입니다. 1~5 사이의 메뉴 번호를 입력해주세요.")
                 continue               
         except ValueError:
-            print("\n올바른 숫자를 입력해 주세요. (문자는 입력할 수 없습니다.)")
+            print("\n잘못된 입력입니다.")
             continue 
 
         if menu == 1:
