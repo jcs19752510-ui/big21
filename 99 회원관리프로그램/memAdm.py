@@ -1,4 +1,3 @@
-
 import pickle
 import re
 
@@ -22,7 +21,7 @@ def load_data() -> None:
         MEMBERS_BUFFER = []
     except Exception as e:
         print(f"\n 데이터 로드 중 예상치 못한 오류 발생: {e}")
-        MEMBERS_BUFFER = []        
+        MEMBERS_BUFFER = []         
 
 # 메모리의 변경 사항을 파일에 동기화
 def save_data():
@@ -31,6 +30,43 @@ def save_data():
             pickle.dump(MEMBERS_BUFFER, f)
     except Exception as e:
         print(f"\n파일 동기화 중 오류가 발생했습니다: {e}")
+
+# 💡 [추가 및 분리] 회원 정보 입력을 안전하게 받아 반환하는 공통 UI 함수
+def input_member(action_name: str) -> tuple:
+    """회원 추가 및 수정 시 공통으로 사용되는 정보 입력 UI 함수"""
+    print(f"\n----------------------------")
+    print(f" {action_name}할 회원의 정보를 입력하세요.")
+    print(f"----------------------------")
+    
+    # 1. 이름 입력 및 검증
+    while True:
+        name = input("이름: ").strip()                
+        if not validate_name(name):
+            print("\n이름은 5자 이내로 입력하세요.")                    
+            continue
+        break
+
+    # 2. 전화번호 입력 및 검증
+    while True:
+        phone = input("전화번호(ex: 01012345678): ").strip()
+        if not validate_phone(phone):
+            print("\n전화번호 형식이 올바르지 않습니다. (예: 01012345678)")                    
+            continue
+        break   
+        
+    # 3. 주소 입력 (자유 입력)
+    addr = input("주소: ").strip()
+
+    # 4. 종류 입력 및 검증
+    while True:
+        div = input("종류(ex. 가족, 친구, 기타): ").strip()
+        if not validate_type(div):
+            print("\n종류는 가족/친구/기타 중 하나여야 합니다.")                    
+            continue
+        break
+
+    # 입력 완료된 데이터를 튜플 형태로 반환
+    return name, phone, addr, div
 
 # 1. 회원 추가
 def add_member(name, phone, addr, div):
@@ -114,32 +150,8 @@ def update_member():
     if target_idx == -1:
         return
 
-    print("\n----------------------------")
-    print(" 수정할 정보를 입력하세요.")
-    print("----------------------------")
-    
-    while True:
-        new_name = input("이름: ").strip()                
-        if not validate_name(new_name):
-            print("\n이름은 5자 이내로 입력하세요.")                    
-            continue
-        break
-
-    while True:
-        new_phone = input("전화번호(ex: 01012345678): ").strip()
-        if not validate_phone(new_phone):
-            print("\n전화번호 형식이 올바르지 않습니다. (예: 01012345678)")                    
-            continue
-        break   
-        
-    new_addr = input("주소: ").strip()
-
-    while True:
-        new_div = input("종류(ex. 가족, 친구, 기타): ").strip()
-        if not validate_type(new_div):
-            print("\n종류는 가족/친구/기타 중 하나여야 합니다.")                    
-            continue
-        break
+    # 💡 중복을 완전히 제거하고 input_member 공통 함수를 호출합니다.
+    new_name, new_phone, new_addr, new_div = input_member("수정")
 
     # 메모리 상의 target_idx 위치 데이터 1건만 수정합니다.
     MEMBERS_BUFFER[target_idx] = {
@@ -176,49 +188,30 @@ def validate_phone(phone: str) -> bool:
 def validate_type(t: str) -> bool:
     return t in ("가족", "친구", "기타")
 
+def print_menu():
+    """메인 메뉴의 레이아웃을 화면에 출력하는 함수 (SCR-001)"""
+    print("\n============================")
+    print("다음 메뉴 중 하나를 선택하세요.")
+    print("============================")
+    print("1. 회원 추가")
+    print("2. 회원 목록 보기")
+    print("3. 회원 정보 수정하기")
+    print("4. 회원 삭제")
+    print("5. 종료")
+
 # 화면 메뉴 로딩
 def main():
     # 💡 프로그램이 실행될 때 최초 1회만 파일에서 데이터를 긁어와 메모리에 올립니다.
     load_data()
 
     while True:
-        print("\n============================")
-        print("다음 메뉴 중 하나를 선택하세요.")
-        print("============================")
-        print("1. 회원 추가")
-        print("2. 회원 목록 보기")
-        print("3. 회원 정보 수정하기")
-        print("4. 회원 삭제")
-        print("5. 종료")
-        menu = input("메뉴를 선택하세요: ")
+        print_menu()
+        menu = input("메뉴를 선택하세요: ").strip()
         
         #1. 회원 추가
         if menu == '1':
-            print("\n----------------------------")
-            print(" 등록할 회원의 정보를 입력하세요.")
-            print("----------------------------")
-
-            while True:
-                name = input("이름: ").strip()                
-                if not validate_name(name):
-                    print("\n이름은 5자 이내로 입력하세요.")                    
-                    continue
-                break
-
-            while True:
-                phone = input("전화번호(ex: 01012345678): ").strip()
-                if not validate_phone(phone):
-                    print("\n전화번호 형식이 올바르지 않습니다. (예: 01012345678)")                    
-                    continue
-                break   
-            addr = input("주소: ").strip()
-
-            while True:
-                div = input("종류(ex. 가족, 친구, 기타): ").strip()
-                if not validate_type(div):
-                    print("\n종류는 가족/친구/기타 중 하나여야 합니다.")                    
-                    continue
-                break
+            # 💡 기존의 길었던 무한 루프 블록을 input_member 호출 한 줄로 대체했습니다.
+            name, phone, addr, div = input_member("등록")
             add_member(name, phone, addr, div)
 
         elif menu == '2':
