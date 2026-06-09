@@ -18,10 +18,7 @@ def load_data() -> None:
         MEMBERS_BUFFER = []
     except (EOFError, pickle.UnpicklingError) as e:
         print(f"\n 저장 파일이 손상되었습니다. 빈 데이터로 시작합니다. ({e})")
-        MEMBERS_BUFFER = []
-    except Exception as e:
-        print(f"\n 데이터 로드 중 예상치 못한 오류 발생: {e}")
-        MEMBERS_BUFFER = []         
+        MEMBERS_BUFFER = []       
 
 # 메모리의 변경 사항을 파일에 동기화
 def save_data():
@@ -199,33 +196,35 @@ def print_menu():
     print("4. 회원 삭제")
     print("5. 종료")
 
-# 화면 메뉴 로딩
+# 화면 메뉴 로딩 (try/except 예외 처리 반영 및 정수 비교 수정 완료)
 def main():
-    # 💡 프로그램이 실행될 때 최초 1회만 파일에서 데이터를 긁어와 메모리에 올립니다.
     load_data()
 
     while True:
         print_menu()
-        menu = input("메뉴를 선택하세요: ").strip()
         
-        #1. 회원 추가
-        if menu == '1':
-            # 💡 기존의 길었던 무한 루프 블록을 input_member 호출 한 줄로 대체했습니다.
+        try:
+            menu = int(input("메뉴를 선택하세요: ").strip())
+            if not (1 <= menu <= 5):
+                print("\n잘못된 입력입니다. 1~5 사이의 메뉴 번호를 입력해주세요.")
+                continue               
+        except ValueError:
+            print("\n올바른 숫자를 입력해 주세요. (문자는 입력할 수 없습니다.)")
+            continue 
+
+        if menu == 1:
             name, phone, addr, div = input_member("등록")
             add_member(name, phone, addr, div)
-
-        elif menu == '2':
+        elif menu == 2:
             list_members()
-        elif menu == '3':
+        elif menu == 3:
             update_member()
-        elif menu == '4':
+        elif menu == 4:
             delete_member()            
-        elif menu == '5':
+        elif menu == 5:
             save_data()            
             print("\n👋 프로그램을 종료합니다.")
             break
-        else:
-            print("\n잘못된 메뉴입니다. 다시 선택하세요.")
 
 if __name__ == "__main__":
     try:
