@@ -8,14 +8,21 @@ FILE_PATH = './members.dat'
 MEMBERS_BUFFER = []
 
 # 프로그램 시작 시 딱 한 번만 파일 전체를 로드하는 함수
-def load_data():
+def load_data() -> None:
+    """프로그램 시작 시 파일을 읽어 메모리 버퍼로 복원 (FN-001)"""
     global MEMBERS_BUFFER
     try:
         with open(FILE_PATH, 'rb') as f:
             MEMBERS_BUFFER = pickle.load(f)
-    except Exception as e:
-        print(f"\n파일을 로드하는 중 오류가 발생했습니다: {e}")
+    except FileNotFoundError:
+        # 최초 실행 시 오류 없이 빈 목록으로 시작
         MEMBERS_BUFFER = []
+    except (EOFError, pickle.UnpicklingError) as e:
+        print(f"\n 저장 파일이 손상되었습니다. 빈 데이터로 시작합니다. ({e})")
+        MEMBERS_BUFFER = []
+    except Exception as e:
+        print(f"\n 데이터 로드 중 예상치 못한 오류 발생: {e}")
+        MEMBERS_BUFFER = []        
 
 # 메모리의 변경 사항을 파일에 동기화
 def save_data():
@@ -49,7 +56,7 @@ def list_members():
         m = MEMBERS_BUFFER[i] # 인덱스로 회원 정보 꺼내기
         
         # 화면에는 i + 1을 해서 1번부터 출력
-        print(f"{i + 1}. 회원정보 : 이름: {m['name']} , 전화번호: {m['phone']} , 주소: {m['addr']} , 구분: {m['div']}")
+        print(f"회원정보 : 이름 = {m['name']}, 전화번호: {m['phone']}, 주소: {m['addr']}, 구분: {m['div']}")
 
 # 이름검색
 def find_by_name(action_name):
@@ -85,11 +92,11 @@ def find_by_name(action_name):
         m = search_results[i][1]    # 회원 정보 딕셔너리
         
         # 화면에는 i + 1을 해서 1번부터 보이게 합니다.
-        print(f"{i + 1}. 이름: {m['name']} | 전화번호: {m['phone']} | 주소: {m['addr']} | 구분: {m['div']}")
+        print(f"{i + 1}. 이름 = {m['name']}, 전화번호 : {m['phone']}, 주소 : {m['addr']}, 구분 : {m['div']}")
     
     while True:
         try:
-            choice = int(input("번호 입력: "))
+            choice = int(input(""))
             if 1 <= choice <= search_count:
                 return search_results[choice - 1][0]
             else:
@@ -212,7 +219,6 @@ def main():
                     print("\n종류는 가족/친구/기타 중 하나여야 합니다.")                    
                     continue
                 break
-
             add_member(name, phone, addr, div)
 
         elif menu == '2':
