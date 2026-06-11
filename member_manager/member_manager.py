@@ -3,12 +3,11 @@ import re
 
 FILE_PATH = './members.dat'
 
-# 💡 전역 변수로 메모리에 회원 리스트를 상주시켜 매번 파일을 읽는 비효율을 제거합니다.
+# 전역 변수로 메모리에 회원 리스트 저장
 MEMBERS_BUFFER = []
 
-# 프로그램 시작 시 딱 한 번만 파일 전체를 로드하는 함수
+# 프로그램 시작 시 파일 로드
 def load_data() -> None:
-    """프로그램 시작 시 파일을 읽어 메모리 버퍼로 복원 (FN-001)"""
     global MEMBERS_BUFFER
     try:
         with open(FILE_PATH, 'rb') as f:
@@ -20,7 +19,7 @@ def load_data() -> None:
         print(f"\n 저장 파일이 손상되었습니다. 빈 데이터로 시작합니다. ({e})")
         MEMBERS_BUFFER = []       
 
-# 메모리의 변경 사항을 파일에 동기화
+# 파일정보 동기화
 def save_data():
     try:
         with open(FILE_PATH, 'wb') as f:
@@ -28,11 +27,11 @@ def save_data():
     except Exception as e:
         print(f"\n파일 동기화 중 오류가 발생했습니다: {e}")
 
-# 💡 [추가 및 분리] 회원 정보 입력을 안전하게 받아 반환하는 공통 UI 함수
-def input_member(action_name: str) -> tuple:
+# 회원정보 입력데이터 검증
+def input_member() -> dict:
     """회원 추가 및 수정 시 공통으로 사용되는 정보 입력 UI 함수"""
     print(f"\n----------------------------")
-    print(f" {action_name}할 회원의 정보를 입력하세요.")
+    print(f"회원의 정보를 입력하세요.")
     print(f"----------------------------")
     
     # 1. 이름 입력 및 검증
@@ -62,17 +61,15 @@ def input_member(action_name: str) -> tuple:
             continue
         break
 
-    # 입력 완료된 데이터를 튜플 형태로 반환
-    return name, phone, addr, div
-
-# 1. 회원 추가
-def add_member(name, phone, addr, div):
-    new_member = {
+    return {
         "name": name,
         "phone": phone,
         "addr": addr,
         "div": div
-    }   
+    }
+
+# 1. 회원 추가
+def add_member(new_member): 
     MEMBERS_BUFFER.append(new_member)
     save_data()
 
@@ -147,16 +144,11 @@ def update_member():
     if target_idx == -1:
         return
 
-    # 💡 중복을 완전히 제거하고 input_member 공통 함수를 호출합니다.
-    new_name, new_phone, new_addr, new_div = input_member("수정")
+    # 수정 데이터 입력
+    new_member   = input_member()
 
-    # 메모리 상의 target_idx 위치 데이터 1건만 수정합니다.
-    MEMBERS_BUFFER[target_idx] = {
-        "name": new_name,
-        "phone": new_phone,
-        "addr": new_addr,  
-        "div": new_div
-    }
+    # 수정데이터 데이터 수정
+    MEMBERS_BUFFER[target_idx] = new_member
 
     save_data()
     print("\n 수정이 완료되었습니다.")
@@ -198,9 +190,11 @@ def print_menu():
 
 # 화면 메뉴 로딩 (try/except 예외 처리 반영 및 정수 비교 수정 완료)
 def main():
+
     load_data()
 
     while True:
+        #메뉴 레이아웃
         print_menu()
         
         try:
@@ -213,8 +207,8 @@ def main():
             continue 
 
         if menu == 1:
-            name, phone, addr, div = input_member("등록")
-            add_member(name, phone, addr, div)
+            new_member = input_member()
+            add_member(new_member)
         elif menu == 2:
             list_members()
         elif menu == 3:
