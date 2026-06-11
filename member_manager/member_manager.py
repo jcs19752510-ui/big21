@@ -217,7 +217,7 @@ def main():
             delete_member()            
         elif menu == 5:
             save_data()            
-            print("\n👋 프로그램을 종료합니다.")
+            print("\n프로그램을 종료합니다.")
             break
 
 if __name__ == "__main__":
