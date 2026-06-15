@@ -3,9 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>호시스팅</title>
+    <title>호이스팅</title>
 </head>
 <body>
+    <script>
+        // var 호이스팅: 선언 전 접근해도 undefined 반환. 에러없다
+        // 컴파일 -> var 변수만 선언한다.(undefined한다. 값은 없다. undefined)
+        // console.log(hoistedVar); 
+        // var hoistedVar = '나중에 선언';
+        // console.log(hoistedVar); 
+
+
+        // let 호이스팅 : 초기화 전 접근하면 referenceError 발생
+        try {
+            console.log(hoistedLet); // ReferenceError: Cannot access 'hoistedLet' before initialization
+        } catch (e) {
+            console.error('에러 : ' , e.message);
+        }
+        let hoistedLet = '안전한 선언';
+
+
+        // // console.log(hoistedConst); // ReferenceError: Cannot access 'hoistedConst' before initialization
+        // const hoistedConst = '호이스팅된 const';
+    </script>
     
 </body>
 </html>
